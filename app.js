@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const exphbs = require('express-handlebars');
 require('dotenv').config();
-const stripe = require('stripe');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 var app = express();
 
@@ -50,10 +50,18 @@ app.get('/checkout', function(req, res) {
       break;
   }
 
+  let displayAmount;
+  if (amount) {
+    displayAmount = (amount / 100).toFixed(2); // 2300 -> "23.00"
+  }
+
   res.render('checkout', {
-    title: title,
-    amount: amount,
-    error: error
+    title,
+    amount,               // still in cents
+    displayAmount,        // friendly string for UI
+    error,
+    item,
+    publishableKey: process.env.STRIPE_PUBLISHABLE_KEY
   });
 });
 
@@ -61,7 +69,44 @@ app.get('/checkout', function(req, res) {
  * Success route
  */
 app.get('/success', function(req, res) {
-  res.render('success');
+  const paymentIntentId = req.query.payment_intent;
+  const amountParam = req.query.amount;
+
+  let displayAmount;
+  if (amountParam) {
+    displayAmount = (Number(amountParam) / 100).toFixed(2);
+  }
+
+  res.render('success', {
+    paymentIntentId: paymentIntentId,
+    amount: displayAmount
+  });
+});
+
+app.post('/create-payment-intent', async (req, res) => {
+  const { item } = req.body;
+  let amount;
+
+  if (item === '1') amount = 2300;
+  else if (item === '2') amount = 2500;
+  else if (item === '3') amount = 2800;
+  else return res.status(400).json({ error: 'Invalid item' });
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'aud',
+      automatic_payment_methods: { enabled: true }
+    });
+
+    res.json({
+      clientSecret: paymentIntent.client_secret,
+      amount
+    });
+  } catch (err) {
+    console.error('Error creating PaymentIntent', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 /**

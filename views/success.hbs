@@ -1,13 +1,18 @@
 <main>
   <div class="mt-40 text-center text-success">
     <h1>
-      <i class="far fa-check-circle"></i> 
+      <i class="far fa-check-circle"></i>
       Success!
     </h1>
   </div>
   <div class="mt-40 text-center">
-    <div class="mt-20 text-center text-secondary border-placeholder">
-      Add details about the payment here!
-    </div>
+    {{#if paymentIntentId}}
+      <p>Total paid: ${{amount}}</p>
+      <p>Stripe Payment Intent ID: {{paymentIntentId}}</p>
+    {{else}}
+      <p>No payment details were found.</p>
+    {{/if}}
+
+    <a href="/" class="btn btn-primary mt-20">Back to store</a>
   </div>
 </main>
