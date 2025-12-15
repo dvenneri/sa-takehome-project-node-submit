@@ -84,8 +84,6 @@ In contrast, understanding the payment lifecycle and behaviour such as when auth
 ## Potential Extensions
 If this application were extended into a more robust solution, my primary focus would be on enhancing the payment experience and making better use of Stripe’s platform capabilities. Some natural next steps would include:
 
-- Enabling additional payment methods, such as Apple Pay and Google Pay.
-
 - Using Stripe Checkout instead of the Payment Element for more advanced commerce needs. This would allow Stripe to handle things like GST calculation, shipping costs, address collection, and discounts.
 
 - Sending email receipts via Stripe. The application could collect the customer’s email address during checkout and pass it to Stripe. Stripe can then automatically send branded email receipts after successful payments, with branding managed directly in the Stripe Dashboard.
