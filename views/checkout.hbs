@@ -66,20 +66,18 @@
 
   // 2. Confirm the payment on form submit
   const form = document.getElementById('payment-form');
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      redirect: 'if_required'
-    });
-
-    if (error) {
-      document.getElementById('payment-message').textContent = error.message;
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      window.location.href = `/success?payment_intent=${paymentIntent.id}&amount=${amount}`;
-    } else {
-      document.getElementById('payment-message').textContent = 'Unexpected payment state.';
+  const { error } = await stripe.confirmPayment({
+    elements,
+    confirmParams: {
+      return_url: `${window.location.origin}/success`
     }
   });
+
+  if (error) {
+    document.getElementById('payment-message').textContent = error.message;
+  }
+});
 </script>

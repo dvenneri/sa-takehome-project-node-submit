@@ -68,20 +68,43 @@ app.get('/checkout', function(req, res) {
 /**
  * Success route
  */
-app.get('/success', function(req, res) {
+app.get('/success', async function(req, res) {
   const paymentIntentId = req.query.payment_intent;
-  const amountParam = req.query.amount;
 
-  let displayAmount;
-  if (amountParam) {
-    displayAmount = (Number(amountParam) / 100).toFixed(2);
+  if (!paymentIntentId) {
+    return res.render('success', {
+      paymentIntentId: null,
+      amount: null,
+      currency: null,
+      status: null,
+      error: 'No payment_intent was provided.'
+    });
   }
 
-  res.render('success', {
-    paymentIntentId: paymentIntentId,
-    amount: displayAmount
-  });
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+
+    const displayAmount = (paymentIntent.amount / 100).toFixed(2);
+    const currency = (paymentIntent.currency || '').toUpperCase();
+
+    return res.render('success', {
+      paymentIntentId: paymentIntent.id,
+      amount: displayAmount,
+      currency,
+      status: paymentIntent.status
+    });
+  } catch (err) {
+    console.error('Error retrieving PaymentIntent', err);
+    return res.render('success', {
+      paymentIntentId: paymentIntentId,
+      amount: null,
+      currency: null,
+      status: null,
+      error: err.message
+    });
+  }
 });
+
 
 app.post('/create-payment-intent', async (req, res) => {
   const { item } = req.body;

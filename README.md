@@ -6,7 +6,7 @@ My task was to integrate Stripe so that users can securely complete a purchase u
 To get started, clone the repository and run `npm install` to install dependencies:
 
 ```
-git clone https://github.com/mattmitchell6/sa-takehome-project-node && cd sa-takehome-project-node
+git clone https://github.com/dvenneri/sa-takehome-project-node-submit.git
 npm install
 ```
 Rename `sample.env` to `.env` and populate with your Stripe account's test API keys
@@ -84,11 +84,13 @@ In contrast, understanding the payment lifecycle and behaviour such as when auth
 ## Potential Extensions
 If this application were extended into a more robust solution, my primary focus would be on enhancing the payment experience and making better use of Stripe’s platform capabilities. Some natural next steps would include:
 
-- Using Stripe Checkout instead of the Payment Element for more advanced commerce needs. This would allow Stripe to handle things like GST calculation, shipping costs, address collection, and discounts.
+- Redirect type payment methods such as Afterpay/Clearpay always return the customer to the configured return_url, regardless of whether the payment succeeds or fails. In a production implementation, the confirmation page would handle non-successful payments better and provide clearer recovery paths, such as retrying payment or returning the customer to checkout.
 
-- Sending email receipts via Stripe. The application could collect the customer’s email address during checkout and pass it to Stripe. Stripe can then automatically send branded email receipts after successful payments, with branding managed directly in the Stripe Dashboard.
+- I would consider using Stripe Checkout instead of the Payment Element for more advanced commerce needs. This would allow Stripe to handle things like GST calculation, shipping costs, address collection, and discounts.
 
-- Saving payment details for future use. For repeat customers, payment details could be securely saved by creating a Stripe Customer allowing payment methods to be reused for future payments without the customer needing to re-enter their details.
+- Send email receipts via Stripe. The application could collect the customer’s email address during checkout and pass it to Stripe. Stripe can then automatically send branded email receipts after successful payments, with branding managed directly in the Stripe Dashboard.
+
+- Save payment details for future use. For repeat customers, payment details could be securely saved by creating a Stripe Customer allowing payment methods to be reused for future payments without the customer needing to re-enter their details.
 
 - Improving how products and pricing are managed. The product list is currently hard-coded for simplicity. In a more realistic build, this would move to a proper source of truth:
   - a database table, so products and prices can be managed without code changes
