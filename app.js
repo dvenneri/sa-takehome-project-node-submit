@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const exphbs = require('express-handlebars');
 require('dotenv').config();
+
+// Initialise Stripe SDK with SECRET key
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 var app = express();
@@ -52,7 +54,7 @@ app.get('/checkout', function(req, res) {
 
   let displayAmount;
   if (amount) {
-    displayAmount = (amount / 100).toFixed(2); // 2300 -> "23.00"
+    displayAmount = (amount / 100).toFixed(2); // e.g. 2300 -> "23.00"
   }
 
   res.render('checkout', {
@@ -80,13 +82,17 @@ app.get('/success', async function(req, res) {
       error: 'No payment_intent was provided.'
     });
   }
-
+    /**
+     * Backend retrieves PaymentIntent from Stripe (source of truth)
+     * This ensures amount/currency/status shown on confirmation page can’t be tampered with.
+     */
   try {
     const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
 
     const displayAmount = (paymentIntent.amount / 100).toFixed(2);
     const currency = (paymentIntent.currency || '').toUpperCase();
 
+    // Backend renders confirmation page using Stripe data
     return res.render('success', {
       paymentIntentId: paymentIntent.id,
       amount: displayAmount,
@@ -105,7 +111,7 @@ app.get('/success', async function(req, res) {
   }
 });
 
-
+//Backend validates item and calculates amount
 app.post('/create-payment-intent', async (req, res) => {
   const { item } = req.body;
   let amount;
@@ -115,16 +121,16 @@ app.post('/create-payment-intent', async (req, res) => {
   else if (item === '3') amount = 2800;
   else return res.status(400).json({ error: 'Invalid item' });
 
+  // Create a PaymentIntent with the order amount and currency
   try {
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
       currency: 'aud',
       automatic_payment_methods: { enabled: true }
     });
-
+// Send client secret to client
     res.json({
-      clientSecret: paymentIntent.client_secret,
-      amount
+      clientSecret: paymentIntent.client_secret
     });
   } catch (err) {
     console.error('Error creating PaymentIntent', err);

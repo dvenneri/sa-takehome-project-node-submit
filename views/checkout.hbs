@@ -39,6 +39,7 @@
   </div>
 </div>
 
+<!-- Frontend initialises Stripe.js with publishable key and handles payment submission -->
 <script src="https://js.stripe.com/v3/"></script>
 <script>
   const stripe = Stripe('{{publishableKey}}');
@@ -56,7 +57,7 @@
     });
 
     const data = await res.json();
-
+// Set up Stripe.js and Elements to use in checkout form
     elements = stripe.elements({ clientSecret: data.clientSecret });
     const paymentElement = elements.create('payment');
     paymentElement.mount('#payment-element');
@@ -64,11 +65,11 @@
 
   initialize();
 
-  // 2. Confirm the payment on form submit
+  // Confirm the payment with the Payment Element
   const form = document.getElementById('payment-form');
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
-
+// Confirm the payment with the Payment Element
   const { error } = await stripe.confirmPayment({
     elements,
     confirmParams: {
